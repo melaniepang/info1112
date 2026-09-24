@@ -14,3 +14,8 @@ if [[ "$1" != *.vsc  ]]; then
     echo "Error: file must have a .vsc extension"
     exit 1
 fi
+
+if [[ ! -s "$1" ]]; then
+    echo "Warning: file is empty, no .bin produced"
+    exit 1
+fi
