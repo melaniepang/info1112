@@ -70,4 +70,38 @@ for i in 1 2; do
     dataArray+=("$(dec_to_bin $((10#$val)))")
 done
 
-echo "${dataArray[@]}"
+for (( i=3; i<${#lines[@]}; i++ )); do
+    line="${lines[$i]}"
+
+    if (( ${#line} > 11 )); then
+        echo "Error: line $((i+1)) is too long"
+        exit 1
+    fi
+
+    IFS=',' read -r ins reg mem <<< "$line"
+
+    if [[ "$ins" == "LOAD" ]]; then opcode="000001"
+    elif [[ "$ins" == "STORE" ]]; then opcode="000010"
+    elif [[ "$ins" == "ADD" ]]; then opcode="000011"
+    elif [[ "$ins" == "SUB" ]]; then opcode="000100"
+    elif [[ "$ins" == "QUIT" ]]; then opcode="001000"
+    elif [[ "$ins" == "PRINT" ]]; then opcode="001001"
+    else
+        echo "Error: unknown instruction '$ins' on line $((i+1))"
+        exit 1
+    fi
+
+    if [[ ! "$reg" =~ ^[0-3]$ ]]; then
+        echo "Error: register must be 0-3 on line $((i+1))"
+        exit 1
+    fi
+
+    if [[ ! "$mem" =~ ^[0-9]+$ ]] || (( 10#$mem > 255 )); then
+        echo "Error: memory address must be 0-255 on line $((i+1))"
+        exit 1
+    fi
+
+    echo "$ins -> opcode $opcode, reg $reg, mem $mem"
+
+
+done
