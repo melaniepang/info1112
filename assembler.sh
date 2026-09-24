@@ -70,6 +70,9 @@ for i in 1 2; do
     dataArray+=("$(dec_to_bin $((10#$val)))")
 done
 
+count=0
+found_quit=0
+
 for (( i=3; i<${#lines[@]}; i++ )); do
     line="${lines[$i]}"
 
@@ -101,7 +104,35 @@ for (( i=3; i<${#lines[@]}; i++ )); do
         exit 1
     fi
 
-    echo "$ins -> opcode $opcode, reg $reg, mem $mem"
+    regbin=$(dec_to_bin "$reg")
+    dataArray+=("$opcode${regbin:6:2}")
+    dataArray+=("$(dec_to_bin $((10#$mem)))")
 
+    (( count++ ))
+    if (( count > 100 )); then
+        echo "Error: more than 100 instructions"
+        exit 1
+    fi
+
+    if [[ "$ins" == "QUIT" ]]; then
+        if [[ "$line" != "QUIT,0,0" ]]; then
+            echo "Error: QUIT must be exactly QUIT,0,0"
+            exit 1
+        fi
+        found_quit=1
+        break
+    fi
 
 done
+
+if (( found_quit == 0 )); then
+    echo "Error: program has no QUIT,0,0"
+    exit 1
+fi
+
+> "$outfile"
+for byte in "${dataArray[@]}"; do
+    hex=$(printf '%02x' "$((2#$byte))")
+    printf "\x$hex" >> "$outfile"
+done
+echo "Created $outfile"
