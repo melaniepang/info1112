@@ -58,3 +58,16 @@ if [[ "${lines[0]}" == "0" ]]; then
     echo "Created $outfile"
     exit 0
 fi
+
+dataArray=()
+
+for i in 1 2; do
+    val="${lines[$i]}"
+    if [[ ! "$val" =~ ^[0-9]+$ ]] || (( 10#$val > 127 )); then
+        echo "Error: line $((i+1)) must be a number from 0 to 127"
+        exit 1
+    fi
+    dataArray+=("$(dec_to_bin $((10#$val)))")
+done
+
+echo "${dataArray[@]}"
