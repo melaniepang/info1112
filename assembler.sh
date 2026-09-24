@@ -16,27 +16,40 @@ dec_to_bin() {
 
 
 
-if [[ $# -ne 1 ]]; then
-    echo "Error: expected exactly one argument"
+   if [[ $# -eq 0 ]]; then
+    echo "usage: no argument is provided"
+    exit 1
+fi
+
+if [[ $# -gt 1 ]]; then
+    echo "usage: more than one arguments are provided"
+    exit 1
+fi
+
+if [[ -e "$1" && ! -f "$1" ]]; then
+    echo "usage: input is not a file or it does not exist"
+    exit 1
+fi
+
+if [[ "$1" != *.vsc ]]; then
+    echo "usage: input does not have the extension .vsc"
     exit 1
 fi
 
 if [[ ! -f "$1" ]]; then
-    echo "Error: file '$1' does not exist"
-    exit 1
-fi
-
-if [[ "$1" != *.vsc  ]]; then
-    echo "Error: file must have a .vsc extension"
+    echo "usage: input is not a file or it does not exist"
     exit 1
 fi
 
 if [[ ! -s "$1" ]]; then
-    echo "Warning: file is empty, no .bin produced"
+    echo "usage: the file is empty – no .bin file is produced"
     exit 1
 fi
 
    mapfile -t lines < "$1"
+
+   lines=("${lines[@]%$'\r'}")
+
 
    if [[ "${lines[0]}" != "0" && "${lines[0]}" != "2" ]]; then
        echo "Error: line 1 must be 0 or 2"
@@ -55,7 +68,10 @@ if [[ "${lines[0]}" == "0" ]]; then
         exit 1
     fi
     printf '\x20\x00' > "$outfile"
-    echo "Created $outfile"
+       echo "It is a QUIT program"
+       echo "The content of the .bin file is"
+       echo "20"
+       echo "00"
     exit 0
 fi
 
@@ -130,9 +146,11 @@ if (( found_quit == 0 )); then
     exit 1
 fi
 
-> "$outfile"
-for byte in "${dataArray[@]}"; do
-    hex=$(printf '%02x' "$((2#$byte))")
-    printf "\x$hex" >> "$outfile"
-done
-echo "Created $outfile"
+   echo "It is an ADD/SUB program"
+   echo "The content of the .bin file is"
+   > "$outfile"
+   for byte in "${dataArray[@]}"; do
+       hex=$(printf '%02x' "$((2#$byte))")
+       printf "\x$hex" >> "$outfile"
+       echo "$hex"
+   done
