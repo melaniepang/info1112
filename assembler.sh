@@ -45,4 +45,16 @@ fi
 
 
 
-dec_to_bin 20
+
+
+outfile="${1%.vsc}.bin"
+
+if [[ "${lines[0]}" == "0" ]]; then
+    if [[ "${lines[1]}" != "QUIT,0,0" ]]; then
+        echo "Error: expected QUIT,0,0 on line 2"
+        exit 1
+    fi
+    printf '\x20\x00' > "$outfile"
+    echo "Created $outfile"
+    exit 0
+fi
