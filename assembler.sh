@@ -19,3 +19,10 @@ if [[ ! -s "$1" ]]; then
     echo "Warning: file is empty, no .bin produced"
     exit 1
 fi
+
+   mapfile -t lines < "$1"
+
+   if [[ "${lines[0]}" != "0" && "${lines[0]}" != "2" ]]; then
+       echo "Error: line 1 must be 0 or 2"
+       exit 1
+   fi
